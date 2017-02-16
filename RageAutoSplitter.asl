@@ -34,7 +34,10 @@ start
 {
 	vars.previousTimeMsec = 0;
 	vars.levelBaseTimeMsec = current.levelTimeMsec;
-	return true;
+	if(old.levelTimeMsec == 160 && current.levelTimeMsec == 0)
+	{
+		return true;
+	}
 }
 
 split
