@@ -14,6 +14,7 @@ init
 
 	vars.previousTimeMsec = 0;
 	vars.levelBaseTimeMsec = 0;
+	vars.numLevelLoads = 0;
 }
 
 update
@@ -34,13 +35,14 @@ start
 {
 	vars.previousTimeMsec = 0;
 	vars.levelBaseTimeMsec = current.levelTimeMsec;
+	vars.numLevelLoads = 0;
 
 	return (old.levelTimeMsec == 160 && current.levelTimeMsec == 0);
 }
 
 split
 {
-	return (old.levelTimeMsec == 0 && current.levelTimeMsec != 0) && (vars.levelBaseTimeMsec == 160);
+	return ((old.levelTimeMsec == 0 && current.levelTimeMsec != 0) && (vars.levelBaseTimeMsec == 160));
 }
 
 isLoading
@@ -50,5 +52,14 @@ isLoading
 
 gameTime
 {
+	if((old.levelTimeMsec == 0 && current.levelTimeMsec != 0) && (vars.levelBaseTimeMsec == 160))
+	{
+		vars.numLevelLoads++;
+		if(vars.numLevelLoads == 72)
+		{
+			vars.previousTimeMsec -= 28640;
+		}
+	}	
+
 	return TimeSpan.FromMilliseconds(vars.previousTimeMsec + current.levelTimeMsec - vars.levelBaseTimeMsec);
 }
