@@ -1,11 +1,13 @@
 state("Rage64")
 {
 	int levelTimeMsec : 0x02289A88;
+	string40 levelName : 0x41ACD90;
 }
 
 state("Rage")
 {
 	int levelTimeMsec : 0x010621C0;
+	string40 levelName : 0x01062114;
 }
 
 init
@@ -14,7 +16,9 @@ init
 
 	vars.previousTimeMsec = 0;
 	vars.levelBaseTimeMsec = 0;
-	vars.numLevelLoads = 0;
+
+	vars.startRemovalMsec = 38320; // Time between first level loading and player gaining control
+	vars.endRemovalMsec = 28640; // Time between the end button is pressed and the last level change
 }
 
 update
@@ -23,7 +27,6 @@ update
 	{
 		vars.previousTimeMsec += old.levelTimeMsec;
 	}
-
 	else if(old.levelTimeMsec == 0 && current.levelTimeMsec != 0)
 	{
 		vars.previousTimeMsec -= vars.levelBaseTimeMsec;
@@ -33,9 +36,8 @@ update
 
 start
 {
-	vars.previousTimeMsec = 0;
+	vars.previousTimeMsec = -vars.startRemovalMsec;
 	vars.levelBaseTimeMsec = current.levelTimeMsec;
-	vars.numLevelLoads = 0;
 
 	return (old.levelTimeMsec == 160 && current.levelTimeMsec == 0);
 }
@@ -52,14 +54,10 @@ isLoading
 
 gameTime
 {
-	if((old.levelTimeMsec == 0 && current.levelTimeMsec != 0) && (vars.levelBaseTimeMsec == 160))
+	if(old.levelName == "authority_base" && current.levelName == "subway_town")
 	{
-		vars.numLevelLoads++;
-		if(vars.numLevelLoads == 72)
-		{
-			vars.previousTimeMsec -= 28640;
-		}
-	}	
+		vars.previousTimeMsec -= vars.endRemovalMsec;
+	}
 
 	return TimeSpan.FromMilliseconds(vars.previousTimeMsec + current.levelTimeMsec - vars.levelBaseTimeMsec);
 }
